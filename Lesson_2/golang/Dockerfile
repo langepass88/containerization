@@ -1,16 +1,16 @@
-FROM golang:1.16-alpine
+FROM golang:1.16-alpine AS build
+
+RUN mkdir /app
+
+COPY . /app
 
 WORKDIR /app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o docker-go .
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
 
-COPY *.go ./
+FROM scratch
 
-RUN go build -o /docker-go
+COPY --from=build  /app/docker-go /
 
 EXPOSE 8080
-
 CMD [ "/docker-go" ]
-
